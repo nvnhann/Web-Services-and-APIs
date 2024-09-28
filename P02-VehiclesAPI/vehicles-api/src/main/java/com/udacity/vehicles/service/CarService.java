@@ -53,11 +53,19 @@ public class CarService {
 
     /**
      * Either creates or updates a vehicle, based on prior existence of car
+     *
      * @param car A car object, which can be either new or existing
      * @return the new/updated car is stored in the repository
      */
     public Car save(Car car) {
-        car.setCreatedAt(LocalDateTime.now());
+        if (car.getId() != null && repository.existsById(car.getId())) {
+            Car existingCar = repository.findById(car.getId()).orElseThrow(CarNotFoundException::new);
+            car.setCreatedAt(existingCar.getCreatedAt());
+            car.setModifiedAt(LocalDateTime.now());
+            existingCar.setCondition(car.getCondition());
+        } else {
+            car.setCreatedAt(LocalDateTime.now());
+        }
         return repository.save(car);
     }
 

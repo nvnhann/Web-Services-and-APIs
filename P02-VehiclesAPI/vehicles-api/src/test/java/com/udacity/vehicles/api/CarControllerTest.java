@@ -4,9 +4,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -111,9 +109,32 @@ public class CarControllerTest {
      */
     @Test
     public void deleteCar() throws Exception {
-        Car car = getCar();
+        Car car = new Car();
+        car.setId(1L);
         given(carService.findById(car.getId())).willReturn(car);
-        mvc.perform(delete("/cars/{id}", car.getId())).andExpect(status().isNoContent());
+        mvc.perform(delete("/cars/{id}", car.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
+
+
+    /**
+     * Tests the update operation of an existing car in the system.
+     *
+     * @throws Exception when car update fails in the system
+     */
+    @Test
+    public void updateCar() throws Exception {
+        Car car = getCar();
+        car.getDetails().setModel("test model");
+        mvc.perform(
+                        put(new URI("/cars/1"))
+                                .content(json.write(car).getJson())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
     }
 
     /**
@@ -139,4 +160,5 @@ public class CarControllerTest {
         car.setCondition(Condition.USED);
         return car;
     }
+    
 }
